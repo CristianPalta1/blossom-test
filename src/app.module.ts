@@ -7,6 +7,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { DatabaseModule } from './database/database.module';
 import { CharactersModule } from './characters/characters.module';
+import { DatabaseSeederService } from './database/seeder.service';
 
 @Module({
   imports: [
@@ -35,5 +36,6 @@ import { CharactersModule } from './characters/characters.module';
 
     CharactersModule,
   ],
+  providers: [DatabaseSeederService],
 })
 export class AppModule {}

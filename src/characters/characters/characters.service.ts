@@ -151,6 +151,31 @@ export class CharactersService {
     }
   }
 
+  async seedInitial(): Promise<void> {
+    // 1) Sólo página 1
+    const { data } = await firstValueFrom(
+      this.httpService.get<ApiResponse>(`${this.apiUrl}?page=1`),
+    );
+    const firstFifteen = data.results.slice(0, 15);
+
+    // 2) Mapea al DTO de creación
+    const charactersToSave: CreateCharacterData[] = firstFifteen.map((c) => ({
+      name: c.name,
+      status: c.status,
+      species: c.species,
+      gender: c.gender,
+      origin: c.origin?.name || '',
+      location: c.location?.name || '',
+      image: c.image,
+      url: c.url,
+      apiId: c.id,
+    }));
+
+    // 3) Inserta en BD
+    await this.repo.createMany(charactersToSave);
+    this.logger.log(`Seed completed: ${charactersToSave.length} characters`);
+  }
+
   async count(filters?: CharacterFilters): Promise<number> {
     return this.repo.count(filters);
   }
