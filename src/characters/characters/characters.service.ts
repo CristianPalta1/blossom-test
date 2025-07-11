@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import {
   CharactersRepository,
   CharacterFilters,
@@ -19,16 +21,37 @@ export class CharactersService {
 
   constructor(
     private readonly httpService: HttpService,
-    private readonly repo: CharactersRepository, // Cambia el nombre para coincidir con el error
+    private readonly repo: CharactersRepository,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   async findAll(filters?: CharacterFilters): Promise<Character[]> {
+    const cacheKey = `characters:${JSON.stringify(filters || {})}`;
+    const cached = await this.cacheManager.get<Character[]>(cacheKey);
+    if (cached) {
+      this.logger.log(`Cache hit: ${cacheKey}`);
+      return cached;
+    }
     const all = await this.repo.findAll(filters);
-    return all.filter((c) => c.name != null && c.name !== '');
+    const result = all.filter((c) => c.name != null && c.name !== '');
+    await this.cacheManager.set(cacheKey, result, 300);
+    this.logger.log(`Cache set: ${cacheKey}`);
+    return result;
   }
 
   async findOne(id: number): Promise<Character | null> {
-    return this.repo.findOne(id);
+    const cacheKey = `character:${id}`;
+    const cached = await this.cacheManager.get<Character>(cacheKey);
+    if (cached) {
+      this.logger.log(`Cache hit: ${cacheKey}`);
+      return cached;
+    }
+    const character = await this.repo.findOne(id);
+    if (character) {
+      await this.cacheManager.set(cacheKey, character, 300);
+      this.logger.log(`Cache set: ${cacheKey}`);
+    }
+    return character;
   }
 
   async testConnection(): Promise<boolean> {
