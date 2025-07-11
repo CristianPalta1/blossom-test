@@ -3,7 +3,6 @@ export interface ApiCharacter {
   name: string;
   status: string;
   species: string;
-  type: string;
   gender: string;
   origin: {
     name: string;
@@ -34,7 +33,7 @@ export interface CreateCharacterData {
   status: string;
   species: string;
   gender: string;
-  origin?: any;
+  origin: string;
   location: string;
   image: string;
   url: string;

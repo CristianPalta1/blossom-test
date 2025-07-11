@@ -1,20 +1,38 @@
-import {
-  Column,
-  Model,
-  Table,
-  DataType,
-  CreatedAt,
-  UpdatedAt,
-} from 'sequelize-typescript';
-import { Field, ObjectType, ID } from '@nestjs/graphql';
+import { Optional } from 'sequelize';
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 
-@ObjectType() // Para GraphQL
+export interface CharacterAttributes {
+  id: number;
+  name: string;
+  status: string;
+  species: string;
+  gender: string;
+  image: string;
+  origin: string;
+  location: string; // ← Agregar este campo
+  url: string; // ← Agregar este campo
+  apiId: number; // ← Agregar este campo
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export type CharacterCreationAttrs = Optional<
+  CharacterAttributes,
+  'id' | 'createdAt' | 'updatedAt'
+>;
+
+@ObjectType()
 @Table({
+  schema: 'public',
   tableName: 'characters',
   timestamps: true,
 })
-export class Character extends Model<Character> {
-  @Field(() => ID)
+export class Character extends Model<
+  CharacterAttributes,
+  CharacterCreationAttrs
+> {
+  @Field(() => Int)
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
@@ -22,81 +40,51 @@ export class Character extends Model<Character> {
   })
   declare id: number;
 
+  @Field({ nullable: true })
+  @Column({ allowNull: true })
+  declare name?: string;
+
   @Field()
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  name: string;
+  @Column({ allowNull: false })
+  declare status: string;
 
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  description: string;
+  @Field()
+  @Column({ allowNull: false })
+  declare species: string;
 
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  status: string;
+  @Field()
+  @Column({ allowNull: false })
+  declare gender: string;
 
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  species: string;
+  @Field()
+  @Column({ allowNull: false })
+  declare image: string;
 
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  gender: string;
+  @Field()
+  @Column({ allowNull: false })
+  declare origin: string;
 
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  origin: string;
+  @Field()
+  @Column({ allowNull: false })
+  declare location: string;
 
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  location: string;
-
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  image: string;
-
-  @Field({ nullable: true })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  url: string;
+  @Field()
+  @Column({ allowNull: false })
+  declare url: string;
 
   @Field({ nullable: true })
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
+    unique: true,
   })
-  apiId: number; // ID del API externo
+  declare apiId: number;
 
   @Field()
-  @CreatedAt
+  @Column({ allowNull: false })
   declare createdAt: Date;
 
   @Field()
-  @UpdatedAt
+  @Column({ allowNull: false })
   declare updatedAt: Date;
 }

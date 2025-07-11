@@ -3,16 +3,15 @@
 # ------------------------------------------------------
 
 type Character {
-  id: ID!
-  name: String!
-  description: String
-  status: String
-  species: String
-  gender: String
-  origin: String
-  location: String
-  image: String
-  url: String
+  id: Int!
+  name: String
+  status: String!
+  species: String!
+  gender: String!
+  image: String!
+  origin: String!
+  location: String!
+  url: String!
   apiId: Float
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -27,6 +26,7 @@ type Query {
   characters(name: String, status: String, species: String, gender: String, location: String): [Character!]!
   character(id: Int!): Character
   charactersCount(name: String, status: String, species: String, gender: String, origin: String, location: String): Int!
+  testDatabaseConnection: Boolean!
 }
 
 type Mutation {

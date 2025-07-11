@@ -60,6 +60,11 @@ export class CharactersResolver {
     return true;
   }
 
+  @Query(() => Boolean, { name: 'testDatabaseConnection' })
+  async testConnection(): Promise<boolean> {
+    return this.charactersService.testConnection();
+  }
+
   @Mutation(() => Character, { name: 'getCharacterFromApi' })
   async getFromApi(
     @Args('apiId', { type: () => Int }) apiId: number,

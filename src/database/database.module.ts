@@ -15,7 +15,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
         database: config.get('DB_DATABASE'),
         autoLoadModels: true, // detecta automáticamente todos los modelos
         synchronize: true, // sólo en DEV; en PROD usa migraciones
-        logging: false,
+        logging: true,
       }),
       inject: [ConfigService],
     }),

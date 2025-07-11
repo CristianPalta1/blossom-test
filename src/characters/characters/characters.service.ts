@@ -23,11 +23,23 @@ export class CharactersService {
   ) {}
 
   async findAll(filters?: CharacterFilters): Promise<Character[]> {
-    return this.repo.findAll(filters);
+    const all = await this.repo.findAll(filters);
+    return all.filter((c) => c.name != null && c.name !== '');
   }
 
   async findOne(id: number): Promise<Character | null> {
     return this.repo.findOne(id);
+  }
+
+  async testConnection(): Promise<boolean> {
+    try {
+      const count = await this.repo.count();
+      this.logger.log(`Conexión exitosa. Personajes en DB: ${count}`);
+      return true;
+    } catch (error) {
+      this.logger.error('Error de conexión:', error);
+      return false;
+    }
   }
 
   async syncFromApi(): Promise<void> {
