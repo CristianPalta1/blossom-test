@@ -14,17 +14,26 @@ import {
   CreateCharacterData,
 } from './interfaces/api-response.interface';
 
+/**
+ * @Injectable Marca la clase como un proveedor que puede ser inyectado en otros componentes.
+ * Contiene la lógica de negocio para gestionar los personajes.
+ */
 @Injectable()
 export class CharactersService {
   private readonly logger = new Logger(CharactersService.name);
   private readonly apiUrl = 'https://rickandmortyapi.com/api/character';
 
   constructor(
-    private readonly httpService: HttpService,
-    private readonly repo: CharactersRepository,
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly httpService: HttpService, // Cliente HTTP para hacer peticiones a la API externa.
+    private readonly repo: CharactersRepository, // Repositorio para interactuar con la base de datos.
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache, // Gestor de caché (Redis).
   ) {}
 
+  /**
+   * Busca y devuelve todos los personajes que coincidan con los filtros, usando caché.
+   * @param {CharacterFilters} [filters] - Objeto con los filtros a aplicar.
+   * @returns {Promise<Character[]>} Un array de personajes.
+   */
   async findAll(filters?: CharacterFilters): Promise<Character[]> {
     const cacheKey = `characters:${JSON.stringify(filters || {})}`;
     const cached = await this.cacheManager.get<Character[]>(cacheKey);
@@ -39,6 +48,11 @@ export class CharactersService {
     return result;
   }
 
+  /**
+   * Busca un personaje por su ID de base de datos, usando caché.
+   * @param {number} id - El ID del personaje.
+   * @returns {Promise<Character | null>} El personaje encontrado or `null`.
+   */
   async findOne(id: number): Promise<Character | null> {
     const cacheKey = `character:${id}`;
     const cached = await this.cacheManager.get<Character>(cacheKey);
@@ -54,6 +68,10 @@ export class CharactersService {
     return character;
   }
 
+  /**
+   * Verifica la conexión con la base de datos contando los registros.
+   * @returns {Promise<boolean>} `true` si la conexión es exitosa.
+   */
   async testConnection(): Promise<boolean> {
     try {
       const count = await this.repo.count();
@@ -65,8 +83,11 @@ export class CharactersService {
     }
   }
 
+  /**
+   * Sincroniza todos los personajes desde la API de Rick and Morty.
+   * Obtiene todos los personajes paginados y los guarda en la base de datos local.
+   */
   async syncFromApi(): Promise<void> {
-    console.log('asdasd');
     try {
       this.logger.log('Iniciando sincronización con API externa...');
 
@@ -99,8 +120,6 @@ export class CharactersService {
         }),
       );
 
-      console.log('charactersToSave', charactersToSave);
-
       // Guardar en la base de datos
       await this.repo.createMany(charactersToSave);
 
@@ -113,22 +132,25 @@ export class CharactersService {
     }
   }
 
+  /**
+   * Obtiene un personaje de la API por su ID y lo guarda en la base de datos.
+   * Si el personaje ya existe, lo devuelve sin hacer la petición a la API.
+   * @param {number} apiId - El ID del personaje en la API externa.
+   * @returns {Promise<Character>} El personaje guardado o encontrado.
+   */
   async getFromApiAndSave(apiId: number): Promise<Character> {
     try {
-      // Verificar si ya existe en la base de datos
       const existingCharacter = await this.repo.findByApiId(apiId);
       if (existingCharacter) {
         return existingCharacter;
       }
 
-      // Obtener del API
       const response = await firstValueFrom(
         this.httpService.get<ApiCharacter>(`${this.apiUrl}/${apiId}`),
       );
 
       const apiCharacter: ApiCharacter = response.data;
 
-      // Preparar datos para guardar
       const characterData: CreateCharacterData = {
         name: apiCharacter.name,
         status: apiCharacter.status,
@@ -141,7 +163,6 @@ export class CharactersService {
         apiId: apiCharacter.id,
       };
 
-      // Guardar en la base de datos usando upsert
       const newCharacter = await this.repo.upsert(characterData);
 
       return newCharacter;
@@ -151,14 +172,16 @@ export class CharactersService {
     }
   }
 
+  /**
+   * Popula la base de datos con los primeros 15 personajes de la API.
+   * Utilizado para la configuración inicial (seeding).
+   */
   async seedInitial(): Promise<void> {
-    // 1) Sólo página 1
     const { data } = await firstValueFrom(
       this.httpService.get<ApiResponse>(`${this.apiUrl}?page=1`),
     );
     const firstFifteen = data.results.slice(0, 15);
 
-    // 2) Mapea al DTO de creación
     const charactersToSave: CreateCharacterData[] = firstFifteen.map((c) => ({
       name: c.name,
       status: c.status,
@@ -171,11 +194,15 @@ export class CharactersService {
       apiId: c.id,
     }));
 
-    // 3) Inserta en BD
     await this.repo.createMany(charactersToSave);
     this.logger.log(`Seed completed: ${charactersToSave.length} characters`);
   }
 
+  /**
+   * Cuenta el número total de personajes que coinciden con los filtros.
+   * @param {CharacterFilters} [filters] - Objeto con los filtros a aplicar.
+   * @returns {Promise<number>} El número total de personajes.
+   */
   async count(filters?: CharacterFilters): Promise<number> {
     return this.repo.count(filters);
   }

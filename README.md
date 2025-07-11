@@ -1,98 +1,159 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Blossom API Nest
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Esta es una API construida con NestJS, GraphQL, TypeORM y PostgreSQL. Sirve como un backend para gestionar datos de personajes, sincronizándolos desde la API pública de Rick and Morty.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Características
 
-## Description
+- **Framework:** NestJS (v10.0.0)
+- **API:** GraphQL (Apollo)
+- **Base de Datos:** PostgreSQL
+- **ORM:** Sequelize
+- **Caché:** Redis
+- **Sincronización:** Obtiene y guarda datos de la [API de Rick and Morty](https://rickandmortyapi.com/).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerrequisitos
 
-## Project setup
+- Node.js (v18 o superior)
+- npm o yarn
+- Docker y Docker Compose (para levantar la base de datos y Redis)
 
-```bash
-$ npm install
-```
+## Puesta en Marcha
 
-## Compile and run the project
+1.  **Clonar el repositorio:**
 
-```bash
-# development
-$ npm run start
+    ```bash
+    git clone <URL_DEL_REPOSITORIO>
+    cd blossom-api-nest
+    ```
 
-# watch mode
-$ npm run start:dev
+2.  **Instalar dependencias:**
 
-# production mode
-$ npm run start:prod
-```
+    ```bash
+    npm install
+    ```
 
-## Run tests
+3.  **Configurar variables de entorno:**
 
-```bash
-# unit tests
-$ npm run test
+    Crea un archivo `.env` en la raíz del proyecto y añade las siguientes variables. Puedes usar el archivo `.env.example` como base.
 
-# e2e tests
-$ npm run test:e2e
+    ```env
+    # Aplicación
+    PORT=3000
 
-# test coverage
-$ npm run test:cov
-```
+    # Base de Datos PostgreSQL
+    DB_HOST=localhost
+    DB_PORT=5432
+    DB_USERNAME=tu_usuario
+    DB_PASSWORD=tu_contraseña
+    DB_DATABASE=blossom_db
 
-## Deployment
+    # Redis
+    REDIS_HOST=localhost
+    REDIS_PORT=6379
+    ```
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+4.  **Ejecutar la aplicación:**
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+    ```bash
+    # Modo desarrollo con hot-reload
+    npm run start:dev
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+    # Modo producción
+    npm run start:prod
+    ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+    La API estará disponible en `http://localhost:3000` y el playground de GraphQL en `http://localhost:3000/graphql`.
 
-## Resources
+## Scripts Útiles
 
-Check out a few resources that may come in handy when working with NestJS:
+- **Ejecutar tests:**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+  ```bash
+  npm run test
+  ```
 
-## Support
+- **Linter y Formateo:**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+  ```bash
+  # Revisar problemas de linting
+  npm run lint
 
-## Stay in touch
+  # Formatear código con Prettier
+  npm run format
+  ```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## API de GraphQL
 
-## License
+Una vez que la aplicación está corriendo, puedes explorar el esquema y ejecutar operaciones a través del playground de GraphQL en `http://localhost:3000/graphql`.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Consultas (Queries)
+
+- `characters(filters)`: Devuelve una lista de personajes con filtros opcionales.
+  query {
+  characters(
+  name: "Rick",
+  status: "Alive",
+  species: "Human",
+  gender: "male"
+  ) {
+  id
+  apiId
+  name
+  status
+  species
+  gender
+  origin
+  location
+  image
+  url
+  }
+  }
+- `character(id)`: Devuelve un personaje por su ID.
+  query {
+  character(id: 1) {
+  id
+  apiId
+  name
+  status
+  species
+  gender
+  origin
+  location
+  image
+  url
+  }
+  }
+- `charactersCount(filters)`: Devuelve la cantidad de personajes según los filtros.
+  query {
+  charactersCount(status: "Alive", species: "Human")
+  }
+
+- `testDatabaseConnection()`: Prueba la conexion a la DB
+  query {
+  testDatabaseConnection
+  }
+
+### Mutaciones (Mutations)
+
+- `syncCharacters()`: Sincroniza la base de datos local con la API de Rick and Morty.
+
+  mutation {
+  syncCharacters
+  }
+
+- `getCharacterFromApi(apiId)`: Obtiene un personaje de la API externa y lo guarda en la base de datos.
+
+  mutation {
+  getCharacterFromApi(apiId: 42) {
+  id
+  apiId
+  name
+  status
+  species
+  gender
+  origin
+  location
+  image
+  url
+  }
+  }
