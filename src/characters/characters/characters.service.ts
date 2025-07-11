@@ -1,0 +1,122 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import {
+  CharactersRepository,
+  CharacterFilters,
+} from './repositories/characters.repository';
+import { Character } from './entities/character.entity';
+import {
+  ApiResponse,
+  ApiCharacter,
+  CreateCharacterData,
+} from './interfaces/api-response.interface';
+
+@Injectable()
+export class CharactersService {
+  private readonly logger = new Logger(CharactersService.name);
+  private readonly apiUrl = 'https://rickandmortyapi.com/api/character';
+
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly repo: CharactersRepository, // Cambia el nombre para coincidir con el error
+  ) {}
+
+  async findAll(filters?: CharacterFilters): Promise<Character[]> {
+    return this.repo.findAll(filters);
+  }
+
+  async findOne(id: number): Promise<Character | null> {
+    return this.repo.findOne(id);
+  }
+
+  async syncFromApi(): Promise<void> {
+    console.log('asdasd');
+    try {
+      this.logger.log('Iniciando sincronización con API externa...');
+
+      let url = this.apiUrl;
+      let allCharacters: ApiCharacter[] = [];
+
+      // Obtener todos los personajes de la API paginada
+      do {
+        const response = await firstValueFrom(
+          this.httpService.get<ApiResponse>(url),
+        );
+
+        const { results, info } = response.data;
+        allCharacters = [...allCharacters, ...results];
+        url = info.next ?? '';
+      } while (url);
+
+      // Mapear los datos del API al formato de nuestra base de datos
+      const charactersToSave: CreateCharacterData[] = allCharacters.map(
+        (apiCharacter: ApiCharacter) => ({
+          name: apiCharacter.name,
+          status: apiCharacter.status,
+          species: apiCharacter.species,
+          gender: apiCharacter.gender,
+          origin: apiCharacter.origin?.name || '',
+          location: apiCharacter.location?.name || '',
+          image: apiCharacter.image,
+          url: apiCharacter.url,
+          apiId: apiCharacter.id,
+        }),
+      );
+
+      console.log('charactersToSave', charactersToSave);
+
+      // Guardar en la base de datos
+      await this.repo.createMany(charactersToSave);
+
+      this.logger.log(
+        `Sincronización completada: ${charactersToSave.length} personajes`,
+      );
+    } catch (error) {
+      this.logger.error('Error durante la sincronización:', error);
+      throw error;
+    }
+  }
+
+  async getFromApiAndSave(apiId: number): Promise<Character> {
+    try {
+      // Verificar si ya existe en la base de datos
+      const existingCharacter = await this.repo.findByApiId(apiId);
+      if (existingCharacter) {
+        return existingCharacter;
+      }
+
+      // Obtener del API
+      const response = await firstValueFrom(
+        this.httpService.get<ApiCharacter>(`${this.apiUrl}/${apiId}`),
+      );
+
+      const apiCharacter: ApiCharacter = response.data;
+
+      // Preparar datos para guardar
+      const characterData: CreateCharacterData = {
+        name: apiCharacter.name,
+        status: apiCharacter.status,
+        species: apiCharacter.species,
+        gender: apiCharacter.gender,
+        origin: apiCharacter.origin?.name || '',
+        location: apiCharacter.location?.name || '',
+        image: apiCharacter.image,
+        url: apiCharacter.url,
+        apiId: apiCharacter.id,
+      };
+
+      // Guardar en la base de datos usando upsert
+      const newCharacter = await this.repo.upsert(characterData);
+
+      return newCharacter;
+    } catch (error) {
+      this.logger.error(`Error obteniendo personaje ${apiId}:`, error);
+      throw error;
+    }
+  }
+
+  async count(filters?: CharacterFilters): Promise<number> {
+    return this.repo.count(filters);
+  }
+}
